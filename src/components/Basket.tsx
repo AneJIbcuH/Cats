@@ -1,6 +1,7 @@
 import useCatStore from "../store/store";
 import { Cat, SortKey } from "../store/store";
 import { useEffect, useState } from "react";
+import { CloseOutlined, SwapOutlined } from "@ant-design/icons";
 
 const Basket: React.FC = () => {
   const [discount, setDiscount] = useState(1);
@@ -12,7 +13,10 @@ const Basket: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
-    switch (cats.filter((cat) => cat.basket == true).length) {
+    switch (cats.length) {
+      case 0:
+        setDiscount(1);
+        break;
       case 1:
         setDiscount(1);
         break;
@@ -29,7 +33,7 @@ const Basket: React.FC = () => {
         setDiscount(0.8);
         break;
     }
-  }, []);
+  }, [cats]);
 
   function removeBasket(id: string) {
     console.log(id);
@@ -62,36 +66,39 @@ const Basket: React.FC = () => {
 
   const sortedCats = cats.slice().sort(sortCats);
 
-  return (
+  return cats.length > 0 ? (
     <div>
-      <button onClick={() => toggleSort("price")}>Сортировать по цене</button>
-      <button onClick={() => toggleSort("dateAdded")}>
-        Сортировать по дате добавления
-      </button>
+      <div className="filter">
+        <button className="filters" onClick={() => toggleSort("price")}>
+          Сортировать по цене <SwapOutlined />
+        </button>
+        <button className="filters" onClick={() => toggleSort("dateAdded")}>
+          Сортировать по дате добавления <SwapOutlined />
+        </button>
+      </div>
 
       <h1>
         Итого на сумму:{" "}
-        {Math.ceil(
-          cats
-            .filter((cat) => cat.basket == true)
-            .reduce((sum, cat) => sum + cat.price, 0) * discount
-        )}{" "}
+        {Math.ceil(cats.reduce((sum, cat) => sum + cat.price, 0) * discount)}{" "}
         тыщ денег
       </h1>
+      <p>Ваша скидка составила {Math.round((1 - discount) * 100)}%</p>
       <div className="cats">
         {sortedCats?.map((cat: Cat) => (
           <div className="cat" key={cat._id} id={cat._id}>
             <img src={`https://cataas.com/cat/${cat._id}`} alt={cat._id} />
-            <p>{cat.price} тыщ денег</p>
+            <div>{cat.price} тыщ денег</div>
             <button
               onClick={(e) => removeBasket(e.currentTarget.parentElement?.id)}
             >
-              Х
+              <CloseOutlined />
             </button>
           </div>
         ))}
       </div>
     </div>
+  ) : (
+    <p>Корзина пуста</p>
   );
 };
 

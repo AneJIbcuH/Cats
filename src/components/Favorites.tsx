@@ -1,6 +1,7 @@
 import useCatStore from "../store/store";
 import { Cat, SortKey } from "../store/store";
 import { useState } from "react";
+import { CloseOutlined, SwapOutlined } from "@ant-design/icons";
 
 const Favorites: React.FC = () => {
   const { sortKey, setSortKey } = useCatStore();
@@ -9,6 +10,8 @@ const Favorites: React.FC = () => {
     state.cats.filter((cat) => cat.fav == true)
   );
   const setFavorite = useCatStore((state) => state.setFavorite);
+  const [minPrice, setMinPrice] = useState(1);
+  const [maxPrice, setMaxPrice] = useState(100000);
 
   function removeFavorite(id: string) {
     console.log(id);
@@ -39,28 +42,48 @@ const Favorites: React.FC = () => {
     }
   };
 
-  const sortedCats = cats.slice().sort(sortCats);
+  const sortedCats = cats
+    .slice()
+    .sort(sortCats)
+    .filter((cat) => cat.price > minPrice && cat.price < maxPrice);
 
-  return (
+  return cats.length > 0 ? (
     <div className="cats">
-      <button onClick={() => toggleSort('price')}>
-        Сортировать по цене
-      </button>
-      <button onClick={() => toggleSort('dateAdded')}>
-        Сортировать по дате добавления
-      </button>
+      <div className="filter">
+        <input
+          className="filters"
+          type="number"
+          placeholder="Минимальная цена"
+          onChange={(e) => setMinPrice(parseInt(e.target.value))}
+        />
+        <input
+          type="number"
+          className="filters"
+          placeholder="Максимальная цена"
+          onChange={(e) => setMaxPrice(parseInt(e.target.value))}
+        />
+        <button className="filters" onClick={() => toggleSort("price")}>
+          Сортировать по цене <SwapOutlined />
+        </button>
+        <button className="filters" onClick={() => toggleSort("dateAdded")}>
+          Сортировать по дате добавления <SwapOutlined />
+        </button>
+      </div>
+
       {sortedCats?.map((cat: Cat) => (
         <div className="cat" key={cat._id} id={cat._id}>
           <img src={`https://cataas.com/cat/${cat._id}`} alt={cat._id} />
-          <p>{cat.price} тыщ денег</p>
+          <div>{cat.price}$ </div>
           <button
             onClick={(e) => removeFavorite(e.currentTarget.parentElement?.id)}
           >
-            Х
+             <CloseOutlined />
           </button>
         </div>
       ))}
     </div>
+  ) : (
+    <p>В избранном пусто</p>
   );
 };
 
